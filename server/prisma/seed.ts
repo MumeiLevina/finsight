@@ -1,0 +1,3 @@
+import { PrismaClient,TransactionType } from '@prisma/client'; const db=new PrismaClient();
+const defaults=[['Lương','INCOME','#15966A'],['Tiền thưởng','INCOME','#15966A'],['Thu nhập khác','INCOME','#15966A'],['Ăn uống','EXPENSE','#E86A4A'],['Đi lại','EXPENSE','#E86A4A'],['Mua sắm','EXPENSE','#E86A4A'],['Học tập','EXPENSE','#E86A4A'],['Giải trí','EXPENSE','#E86A4A'],['Hóa đơn','EXPENSE','#E86A4A'],['Khác','EXPENSE','#E86A4A']] as const;
+for(const [name,type,color] of defaults){const old=await db.category.findFirst({where:{userId:null,name,type:type as TransactionType}});if(old)await db.category.update({where:{id:old.id},data:{color}});else await db.category.create({data:{name,type:type as TransactionType,color}})} await db.$disconnect();

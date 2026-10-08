@@ -1,0 +1,6 @@
+import { Router } from 'express'; import { db } from '../db.js'; import { auth } from '../middleware.js'; import { categorySchema } from '../validation.js';
+export const categoryRoutes=Router(); categoryRoutes.use(auth);
+categoryRoutes.get('/',async(req,res)=>res.json({categories:await db.category.findMany({where:{OR:[{userId:null},{userId:req.userId}]},orderBy:[{type:'asc'},{name:'asc'}]})}));
+categoryRoutes.post('/',async(req,res)=>res.status(201).json({category:await db.category.create({data:{...categorySchema.parse(req.body),userId:req.userId!}})}));
+categoryRoutes.patch('/:id',async(req,res)=>{const old=await db.category.findFirst({where:{id:req.params.id,userId:req.userId}});if(!old)return res.status(404).json({message:'Không tìm thấy danh mục tùy chỉnh'});res.json({category:await db.category.update({where:{id:old.id},data:categorySchema.partial().parse(req.body)})});});
+categoryRoutes.delete('/:id',async(req,res)=>{const old=await db.category.findFirst({where:{id:req.params.id,userId:req.userId}});if(!old)return res.status(404).json({message:'Không tìm thấy danh mục tùy chỉnh'});if(await db.transaction.count({where:{categoryId:old.id}}))return res.status(409).json({message:'Danh mục đang được giao dịch sử dụng'});await db.category.delete({where:{id:old.id}});res.status(204).send();});
